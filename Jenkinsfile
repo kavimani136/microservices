@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/kavimani136/microservices.git',
+                    url: 'https://github.com/kavimani136/microservices.git'
                   // credentialsId: "${GITHUB_CREDENTIALS}"
             }
         }
