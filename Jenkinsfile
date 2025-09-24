@@ -20,7 +20,7 @@ pipeline {
                     url: 'https://github.com/kavimani136/MicroServicesNodeApp.git',
                     //  credentialsId: "${GITHUB_CREDENTIALS}"
             }
-        }
+        } 
 
         // stage('Docker Login') {
         //     steps {
