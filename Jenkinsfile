@@ -9,7 +9,7 @@ pipeline {
         DOCKER_CREDENTIALS = "dockerhub-kavimani136"
 
         // Jenkins credentials ID for GitHub Personal Access Token (PAT)
-        GITHUB_CREDENTIALS = "github-kavimani136"
+        // GITHUB_CREDENTIALS = "github-kavimani136"
     }
 
     stages {
@@ -18,19 +18,19 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/kavimani136/MicroServicesNodeApp.git',
-                    credentialsId: "${GITHUB_CREDENTIALS}"
+                    // credentialsId: "${GITHUB_CREDENTIALS}"
             }
         }
 
-        stage('Docker Login') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'mani5747', passwordVariable: 'dckr_pat_i-wSg5CszAN0ITkbgBh7ErrV5jk')]) {
-                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    }
-                }
-            }
-        }
+        // stage('Docker Login') {
+        //     steps {
+        //         script {
+        //             withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'mani5747', passwordVariable: 'dckr_pat_i-wSg5CszAN0ITkbgBh7ErrV5jk')]) {
+        //                 sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Build & Push Docker Images') {
             steps {
