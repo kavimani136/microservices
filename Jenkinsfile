@@ -22,15 +22,15 @@ pipeline {
             }
         } 
 
-        // stage('Docker Login') {
-        //     steps {
-        //         script {
-        //             withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'mani5747', passwordVariable: 'dckr_pat_i-wSg5CszAN0ITkbgBh7ErrV5jk')]) {
-        //                 sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Docker Login') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'mani5747', passwordVariable: 'dckr_pat_i-wSg5CszAN0ITkbgBh7ErrV5jk')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    }
+                }
+            }
+        }
 
         stage('Build & Push Docker Images') {
             steps {
