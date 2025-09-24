@@ -18,7 +18,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/kavimani136/MicroServicesNodeApp.git',
-                    // credentialsId: "${GITHUB_CREDENTIALS}"
+                    //  credentialsId: "${GITHUB_CREDENTIALS}"
             }
         }
 
