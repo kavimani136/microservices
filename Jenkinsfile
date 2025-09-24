@@ -5,12 +5,12 @@ pipeline {
         DOCKER_REGISTRY = "mani5747"
         // Use Jenkins credentials instead of hardcoding PATs
         DOCKER_CREDENTIALS = "dockerhub-kavimani136"   // Docker Hub credentials ID in Jenkins
-        GITHUB_CREDENTIALS = "github-kavimani136"      // GitHub PAT credentials ID in Jenkins
+        // GITHUB_CREDENTIALS = "github-kavimani136"      // GitHub PAT credentials ID in Jenkins
     }
 
     stages { 
 
-        stage('Checkout') {
+       stage('Checkout Code') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/kavimani136/microservices.git'
