@@ -18,26 +18,27 @@ pipeline {
             }
         }
 
-        stage('Build & Push Docker Images') {
-            steps {
-                script {
-                    def services = ['user-service','role-service','role-service','api-gateway']
-                    for (service in services) {
-                        def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
-                        echo "Building and pushing image: ${imageTag}"
-                        withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
-                                                         usernameVariable: 'DOCKER_USER', 
-                                                         passwordVariable: 'DOCKER_PASS')]) {
-                            sh """
-                                docker build -t $imageTag ${service}
-                                echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                                docker push $imageTag
-                            """
-                        }
-                    }
+       stage('Build & Push Docker Images') {
+    steps {
+        script {
+            def services = ['user-service','role-service','api-gateway']
+            for (service in services) {
+                def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
+                echo "Building and pushing image: ${imageTag}"
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
+                                                 usernameVariable: 'DOCKER_USER', 
+                                                 passwordVariable: 'DOCKER_PASS')]) {
+                    bat """
+                        docker build -t ${imageTag} ${service}
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        docker push ${imageTag}
+                    """
                 }
             }
         }
+    }
+}
+
 
         stage('Deploy to Kubernetes') {
             steps {
