@@ -79,6 +79,6 @@ services:
       - role-service
       - dept-service
       - country-service
-      - state-service
+      - state-service 
     ports:
       - "3000:3000"
