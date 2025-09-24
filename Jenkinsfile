@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = "mani5747"
-        WORKSPACE = "C:/testProgramData/testJenkins/test.jenkins/testworkspace/testmicroservice"
+        WORKSPACE = "C:/ProgramData/Jenkins/.jenkins/workspace/microservice"
         // Use Jenkins credentials instead of hardcoding PATs
          DOCKER_CREDENTIALS = "f192eec4-48b4-4d05-9e98-5a6f0d6f553a"  // Docker Hub credentials ID in Jenkins
         // GITHUB_CREDENTIALS = "github-kavimani136"      // GitHub PAT credentials ID in Jenkins
