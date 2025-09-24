@@ -1,57 +1,67 @@
 pipeline {
     agent any
 
-
     environment {
-        APP_NAME = "microservices"
-        DIST_DIR = "${WORKSPACE}\\dist\\${APP_NAME}"
-        IIS_DIR  = "C:\\inetpub\\wwwroot\\${APP_NAME}"
+        // DOCKER_REGISTRY = "your-dockerhub-username"
+        // DOCKER_CREDENTIALS = "dockerhub-creds"  // Jenkins Docker Hub credentials ID
+        // GITHUB_CREDENTIALS = "github-creds"     // Jenkins GitHub PAT credentials ID
+          // Docker Hub username or organization name
+    DOCKER_REGISTRY = "kavimani136"
+
+    // Jenkins credentials ID for Docker Hub login
+    DOCKER_CREDENTIALS = "dockerhub-kavimani136"
+
+    // Jenkins credentials ID for GitHub Personal Access Token (PAT)
+    GITHUB_CREDENTIALS = "github-kavimani136"
     }
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/kavimani136/MicroServicesNodeApp.git'
+                git branch: 'main',
+                    url: 'https://github.com/kavimani136/MicroServicesNodeApp.git',
+                    credentialsId: "${GITHUB_CREDENTIALS}"
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build & Push Docker Images') {
             steps {
-                bat "npm install"
+                script {
+                    def services = ['user-service','role-service','dept-service','country-service','api-gateway']
+                    for (service in services) {
+                        def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
+                        echo "Building and pushing image: ${imageTag}"
+                        sh """
+                            docker build -t $imageTag ${service}
+                            echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
+                            docker push $imageTag
+                        """
+                    }
+                }
             }
         }
 
-        stage('Build Angular App') {
-            steps {
-                bat "npm run build -- --configuration=production"
-            }
-        }
-
-        // stage('Deploy to IIS Folder') {
+        // stage('Deploy to Kubernetes') {
         //     steps {
-        //         powershell '''
-        //         # Create IIS folder if it doesn't exist
-        //         if (!(Test-Path "$env:IIS_DIR")) {
-        //             New-Item -ItemType Directory -Path "$env:IIS_DIR" | Out-Null
+        //         script {
+        //             def services = ['user-service','role-service','api-gateway']
+        //             for (service in services) {
+        //                 def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
+        //                 echo "Updating Kubernetes deployment: ${service} with image ${imageTag}"
+        //                 sh "kubectl set image deployment/${service} ${service}=$imageTag --record"
+        //             }
         //         }
-
-        //         # Clean old files
-        //         Remove-Item -Path "$env:IIS_DIR\\*" -Recurse -Force -ErrorAction SilentlyContinue
-
-        //         # Copy new build (web.config already included)
-        //         Copy-Item -Path "$env:DIST_DIR\\*" -Destination "$env:IIS_DIR" -Recurse -Force
-        //         '''
         //     }
         // }
-        
     }
 
     post {
         success {
-            echo "✅ Deployment completed successfully!"
+            echo "Pipeline completed successfully!"
         }
         failure {
-            echo "❌ Deployment failed."
+            echo "Pipeline failed!"
         }
     }
 }
