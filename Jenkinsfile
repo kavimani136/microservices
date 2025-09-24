@@ -28,9 +28,15 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
                                                  usernameVariable: 'mani5747', 
                                                  passwordVariable: 'mani@5747')]) {
-                     bat """
-                    docker build -t ${imageTag} ${service}
-                    REM Skipping docker push
+                  bat """
+                    REM Navigate to the folder where docker-compose.yml exists
+                    cd ${WORKSPACE}
+                    
+                    REM Build all services defined in docker-compose.yml
+                    docker-compose up --build -d
+                    
+                    REM Optional: List running containers
+                    docker ps
                 """
                 }
             }
