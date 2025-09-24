@@ -28,11 +28,10 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
                                                  usernameVariable: 'mani5747', 
                                                  passwordVariable: 'mani@5747')]) {
-                    bat """
-                        docker build -t ${imageTag} ${service}
-                        echo %mani@5747% | docker login -u %mani5747% --password-stdin
-                        docker push ${imageTag}
-                    """
+                     bat """
+                    docker build -t ${imageTag} ${service}
+                    REM Skipping docker push
+                """
                 }
             }
         }
