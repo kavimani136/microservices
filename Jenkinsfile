@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = "mani5747"
+        WORKSPACE = "C:\ProgramData\Jenkins\.jenkins\workspace\microservice"
         // Use Jenkins credentials instead of hardcoding PATs
          DOCKER_CREDENTIALS = "f192eec4-48b4-4d05-9e98-5a6f0d6f553a"  // Docker Hub credentials ID in Jenkins
         // GITHUB_CREDENTIALS = "github-kavimani136"      // GitHub PAT credentials ID in Jenkins
@@ -18,31 +19,44 @@ pipeline {
             }
         }
 
-       stage('Build & Push Docker Images') {
+
+stage('Build & Run with Docker Compose') {
     steps {
         script {
-            def services = ['api-gateway','user-service','role-service']
-            for (service in services) {
-                def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
-                echo "Building and pushing image: ${imageTag}"
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
-                                                 usernameVariable: 'mani5747', 
-                                                 passwordVariable: 'mani@5747')]) {
-                  bat """
-                    REM Navigate to the folder where docker-compose.yml exists
-                    cd ${WORKSPACE}
-                    
-                    REM Build all services defined in docker-compose.yml
-                    docker-compose up --build -d
-                    
-                    REM Optional: List running containers
-                    docker ps
-                """
-                }
-            }
+            bat """
+                REM Navigate to the folder where docker-compose.yml exists
+                cd ${WORKSPACE}
+                
+                REM Build and start all services
+                docker-compose up --build -d
+                
+                REM Optional: Show running containers
+                docker ps
+            """
         }
     }
 }
+
+
+//        stage('Build & Push Docker Images') {
+//     steps {
+//         script {
+//             def services = ['api-gateway','user-service','role-service']
+//             for (service in services) {
+//                 def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
+//                 echo "Building and pushing image: ${imageTag}"
+//                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
+//                                                  usernameVariable: 'mani5747', 
+//                                                  passwordVariable: 'mani@5747')]) {
+//                      bat """
+//                     docker build -t ${imageTag} ${service}
+//                     REM Skipping docker push
+//                 """
+//                 }
+//             }
+//         }
+//     }
+// }
 
 
         stage('Deploy to Kubernetes') {
