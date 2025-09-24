@@ -9,7 +9,7 @@ pipeline {
         // GITHUB_CREDENTIALS = "github-kavimani136"      // GitHub PAT credentials ID in Jenkins
     }
 
-    stages { 
+    stages {  
 
        stage('Checkout Code') {
             steps {
