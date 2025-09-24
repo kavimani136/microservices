@@ -20,6 +20,7 @@ app.use((req, res, next) => {
 app.post("/users", async (req, res) => {
   try {
     console.log("hi");
+    console.log("hi");
     let date = new Date();
     const { username, password, status } = req.body;
     const result = await pool.query(
@@ -35,6 +36,7 @@ app.post("/users", async (req, res) => {
 // ✅ Get All Users
 app.get("/users", async (req, res) => {
   try {
+      console.log("Get All Users");
       console.log("users get");
     const result = await pool.query("SELECT * FROM users");
     res.json(result.rows);

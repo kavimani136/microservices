@@ -21,16 +21,16 @@ pipeline {
        stage('Build & Push Docker Images') {
     steps {
         script {
-            def services = ['user-service','role-service','api-gateway']
+            def services = ['api-gateway','user-service','role-service']
             for (service in services) {
                 def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
                 echo "Building and pushing image: ${imageTag}"
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", 
-                                                 usernameVariable: 'DOCKER_USER', 
-                                                 passwordVariable: 'DOCKER_PASS')]) {
+                                                 usernameVariable: 'mani5747', 
+                                                 passwordVariable: 'mani@5747')]) {
                     bat """
                         docker build -t ${imageTag} ${service}
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        echo %mani@5747% | docker login -u %mani5747% --password-stdin
                         docker push ${imageTag}
                     """
                 }
