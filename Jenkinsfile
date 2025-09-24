@@ -2,17 +2,14 @@ pipeline {
     agent any
 
     environment {
-        // DOCKER_REGISTRY = "your-dockerhub-username"
-        // DOCKER_CREDENTIALS = "dockerhub-creds"  // Jenkins Docker Hub credentials ID
-        // GITHUB_CREDENTIALS = "github-creds"     // Jenkins GitHub PAT credentials ID
-          // Docker Hub username or organization name
-    DOCKER_REGISTRY = "kavimani136"
+        // Docker Hub username or organization name
+        DOCKER_REGISTRY = "mani5747"
 
-    // Jenkins credentials ID for Docker Hub login
-    DOCKER_CREDENTIALS = "dockerhub-kavimani136"
+        // Jenkins credentials ID for Docker Hub login
+        DOCKER_CREDENTIALS = "dockerhub-kavimani136"
 
-    // Jenkins credentials ID for GitHub Personal Access Token (PAT)
-    GITHUB_CREDENTIALS = "github-kavimani136"
+        // Jenkins credentials ID for GitHub Personal Access Token (PAT)
+        GITHUB_CREDENTIALS = "github-kavimani136"
     }
 
     stages {
@@ -25,6 +22,16 @@ pipeline {
             }
         }
 
+        stage('Docker Login') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'mani5747', passwordVariable: 'dckr_pat_i-wSg5CszAN0ITkbgBh7ErrV5jk')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    }
+                }
+            }
+        }
+
         stage('Build & Push Docker Images') {
             steps {
                 script {
@@ -33,9 +40,8 @@ pipeline {
                         def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
                         echo "Building and pushing image: ${imageTag}"
                         sh """
-                            docker build -t $imageTag ${service}
-                            echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
-                            docker push $imageTag
+                            docker build -t ${imageTag} ${service}
+                            docker push ${imageTag}
                         """
                     }
                 }
@@ -49,7 +55,7 @@ pipeline {
         //             for (service in services) {
         //                 def imageTag = "${DOCKER_REGISTRY}/${service}:${env.BUILD_NUMBER}"
         //                 echo "Updating Kubernetes deployment: ${service} with image ${imageTag}"
-        //                 sh "kubectl set image deployment/${service} ${service}=$imageTag --record"
+        //                 sh "kubectl set image deployment/${service} ${service}=${imageTag} --record"
         //             }
         //         }
         //     }
@@ -58,10 +64,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo "Pipeline failed!"
+            echo "❌ Pipeline failed!"
         }
     }
 }
