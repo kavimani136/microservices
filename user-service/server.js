@@ -21,6 +21,7 @@ app.post("/users", async (req, res) => {
   try {
     console.log("hi");
     console.log("hi");
+     console.log("hi");
     let date = new Date();
     const { username, password, status } = req.body;
     const result = await pool.query(
