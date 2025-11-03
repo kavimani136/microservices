@@ -53,7 +53,7 @@ pipeline {
     agent any
 
     environment {
-        SERVICE_NAME = ''
+        SERVICES_TO_DEPLOY = ''
     }
 
     stages {
@@ -64,56 +64,39 @@ pipeline {
             }
         }
 
-  stage('Detect Changed Microservice') {
-    steps {
-        script {
-            echo "🔍 Detecting which microservice changed..."
-
-            // Run git diff and clean Windows command prefix lines
-            def gitOutput = bat(returnStdout: true, script: 'git diff --name-only HEAD~1 HEAD').trim()
-            def changedFiles = gitOutput.readLines()
-                .collect { it.trim() }
-                .findAll { it && !it.contains('>') } // remove 'C:\\ProgramData...' junk lines
-
-            echo "Changed files (cleaned): ${changedFiles}"
-
-            // Find first folder containing '-service'
-            def changedServiceFolder = changedFiles.find { it =~ /.*-service.*/ }
-
-            if (changedServiceFolder) {
-                // Normalize slashes and extract folder name
-                changedServiceFolder = changedServiceFolder.replaceAll('\\\\', '/')
-                env.SERVICE_NAME = changedServiceFolder.tokenize('/')[0].trim()
-                echo "📦 Detected changed service folder: ${env.SERVICE_NAME}"
-            } else {
-                env.SERVICE_NAME = 'none'
-                echo "⚠️  No microservice changes detected. Skipping deployment."
+        stage('Load Services from .env') {
+            steps {
+                script {
+                    echo "🔍 Reading .env file for deployment list..."
+                    
+                    def envFile = readFile("${WORKSPACE}/.env")
+                    def match = envFile =~ /SERVICES_TO_DEPLOY=(.*)/
+                    if (match) {
+                        env.SERVICES_TO_DEPLOY = match[0][1].trim()
+                        echo "📦 Services to deploy: ${env.SERVICES_TO_DEPLOY}"
+                    } else {
+                        env.SERVICES_TO_DEPLOY = ''
+                        echo "⚠️ No SERVICES_TO_DEPLOY variable found in .env"
+                    }
+                }
             }
         }
-    }
-}
 
-
-
-       stage('Deploy Changed Microservice') {
-    when { expression { env.SERVICE_NAME != 'none' } }
-    steps {
-        bat """
-            echo ================================
-            echo 🐳 Deploying Service: ${SERVICE_NAME}
-            echo ================================
-
-            cd ${WORKSPACE}
-
-            docker-compose build ${SERVICE_NAME}
-            docker-compose up -d ${SERVICE_NAME}
-
-            echo ✅ ${SERVICE_NAME} deployed successfully!
-            docker ps
-        """
-    }
-}
-
+        stage('Deploy Selected Microservices') {
+            when { expression { env.SERVICES_TO_DEPLOY?.trim() } }
+            steps {
+                script {
+                    def services = env.SERVICES_TO_DEPLOY.split(',').collect { it.trim() }
+                    for (service in services) {
+                        echo "🚀 Deploying ${service}..."
+                        bat """
+                            docker-compose build ${service}
+                            docker-compose up -d ${service}
+                        """
+                    }
+                }
+            }
+        }
     }
 
     post {
