@@ -64,16 +64,25 @@ pipeline {
             }
         }
 
-      stage('Detect Changed Microservice') {
+  stage('Detect Changed Microservice') {
     steps {
         script {
             echo "🔍 Detecting which microservice changed..."
-            def changedFiles = bat(returnStdout: true, script: 'git diff --name-only HEAD~1 HEAD').trim().split('\n')
-            echo "Changed files: ${changedFiles}"
 
-            // Match folder name containing "-service"
+            // Run git diff and clean Windows command prefix lines
+            def gitOutput = bat(returnStdout: true, script: 'git diff --name-only HEAD~1 HEAD').trim()
+            def changedFiles = gitOutput.readLines()
+                .collect { it.trim() }
+                .findAll { it && !it.contains('>') } // remove 'C:\\ProgramData...' junk lines
+
+            echo "Changed files (cleaned): ${changedFiles}"
+
+            // Find first folder containing '-service'
             def changedServiceFolder = changedFiles.find { it =~ /.*-service.*/ }
+
             if (changedServiceFolder) {
+                // Normalize slashes and extract folder name
+                changedServiceFolder = changedServiceFolder.replaceAll('\\\\', '/')
                 env.SERVICE_NAME = changedServiceFolder.tokenize('/')[0].trim()
                 echo "📦 Detected changed service folder: ${env.SERVICE_NAME}"
             } else {
@@ -83,6 +92,7 @@ pipeline {
         }
     }
 }
+
 
 
        stage('Deploy Changed Microservice') {
