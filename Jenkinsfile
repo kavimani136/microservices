@@ -48,45 +48,24 @@
 //     }
 // }
 
-
 pipeline {
     agent any
 
-    environment {
-        SERVICES_TO_DEPLOY = ''
+    parameters {
+        string(name: 'SERVICES_TO_DEPLOY', defaultValue: 'user-service', description: 'Comma-separated microservices to deploy')
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Load Services from .env') {
-            steps {
-                script {
-                    echo "🔍 Reading .env file for deployment list..."
-                    
-                    def envFile = readFile("${WORKSPACE}/.env")
-                    def match = envFile =~ /SERVICES_TO_DEPLOY=(.*)/
-                    if (match) {
-                        env.SERVICES_TO_DEPLOY = match[0][1].trim()
-                        echo "📦 Services to deploy: ${env.SERVICES_TO_DEPLOY}"
-                    } else {
-                        env.SERVICES_TO_DEPLOY = ''
-                        echo "⚠️ No SERVICES_TO_DEPLOY variable found in .env"
-                    }
-                }
-            }
-        }
-
         stage('Deploy Selected Microservices') {
-            when { expression { env.SERVICES_TO_DEPLOY?.trim() } }
             steps {
                 script {
-                    def services = env.SERVICES_TO_DEPLOY.split(',').collect { it.trim() }
+                    def services = params.SERVICES_TO_DEPLOY.split(',').collect { it.trim() }
                     for (service in services) {
                         echo "🚀 Deploying ${service}..."
                         bat """
@@ -100,14 +79,8 @@ pipeline {
     }
 
     post {
-        success {
-            echo '✅ Deployment pipeline completed successfully!'
-        }
-        failure {
-            echo '❌ Deployment failed! Check the logs for errors.'
-        }
-        always {
-            echo 'Pipeline execution finished.'
-        }
+        success { echo '✅ Deployment pipeline completed successfully!' }
+        failure { echo '❌ Deployment failed!' }
+        always  { echo 'Pipeline execution finished.' }
     }
 }
