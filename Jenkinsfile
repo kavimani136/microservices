@@ -64,44 +64,46 @@ pipeline {
             }
         }
 
-        stage('Detect Changed Microservice') {
-            steps {
-                script {
-                    echo "🔍 Detecting which microservice changed..."
-                    def changedFiles = bat(returnStdout: true, script: 'git diff --name-only HEAD~1 HEAD').trim().split('\n')
-                    echo "Changed files: ${changedFiles}"
+      stage('Detect Changed Microservice') {
+    steps {
+        script {
+            echo "🔍 Detecting which microservice changed..."
+            def changedFiles = bat(returnStdout: true, script: 'git diff --name-only HEAD~1 HEAD').trim().split('\n')
+            echo "Changed files: ${changedFiles}"
 
-                    // Extract the first folder that starts with "service-"
-                    def changedServiceFolder = changedFiles.find { it =~ /service-/ }
-                    if (changedServiceFolder) {
-                        env.SERVICE_NAME = changedServiceFolder.tokenize('/')[0]
-                        echo "📦 Detected changed service folder: ${env.SERVICE_NAME}"
-                    } else {
-                        env.SERVICE_NAME = 'none'
-                        echo "⚠️  No microservice changes detected. Skipping deployment."
-                    }
-                }
+            // Match folder name containing "-service"
+            def changedServiceFolder = changedFiles.find { it =~ /.*-service.*/ }
+            if (changedServiceFolder) {
+                env.SERVICE_NAME = changedServiceFolder.tokenize('/')[0].trim()
+                echo "📦 Detected changed service folder: ${env.SERVICE_NAME}"
+            } else {
+                env.SERVICE_NAME = 'none'
+                echo "⚠️  No microservice changes detected. Skipping deployment."
             }
         }
+    }
+}
 
-        stage('Deploy Changed Microservice') {
-            when { expression { env.SERVICE_NAME != 'none' } }
-            steps {
-                bat """
-                    echo ================================
-                    echo 🐳 Deploying Service: ${SERVICE_NAME}
-                    echo ================================
 
-                    cd ${WORKSPACE}
+       stage('Deploy Changed Microservice') {
+    when { expression { env.SERVICE_NAME != 'none' } }
+    steps {
+        bat """
+            echo ================================
+            echo 🐳 Deploying Service: ${SERVICE_NAME}
+            echo ================================
 
-                    docker-compose build ${SERVICE_NAME.replace('service-', '')}
-                    docker-compose up -d ${SERVICE_NAME.replace('service-', '')}
+            cd ${WORKSPACE}
 
-                    echo ✅ ${SERVICE_NAME} deployed successfully!
-                    docker ps
-                """
-            }
-        }
+            docker-compose build ${SERVICE_NAME}
+            docker-compose up -d ${SERVICE_NAME}
+
+            echo ✅ ${SERVICE_NAME} deployed successfully!
+            docker ps
+        """
+    }
+}
+
     }
 
     post {
